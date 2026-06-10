@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Member - Arta Fortuna</title>
+    <style>
+        /* Konfigurasi Variabel Warna (Default Light Mode - Cerah) */
+        :root {
+            --bg-body: #f0f4f8;
+            --bg-container: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --primary: #3182ce;
+            --primary-hover: #2b6cb0;
+            --success: #38a169;
+            --danger: #e53e3e;
+            --warning: #dd6b20;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --tier-basic: #edf2f7;
+            --tier-reguler: #ebf8ff;
+            --tier-premium: #feebc8;
+        }
+
+        /* Variabel untuk Dark Mode */
+        [data-theme="dark"] {
+            --bg-body: #1a202c;
+            --bg-container: #2d3748;
+            --text-main: #f7fafc;
+            --text-muted: #a0aec0;
+            --primary: #63b3ed;
+            --primary-hover: #4299e1;
+            --border-color: #4a5568;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            --tier-basic: #4a5568;
+            --tier-reguler: #2b6cb0;
+            --tier-premium: #9c4221;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header & Navigasi */
+        header {
+            background-color: var(--bg-container);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+
+        .theme-toggle {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: var(--shadow);
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Konten Utama */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            main {
+                grid-template-columns: 350px 1fr;
+            }
+        }
+
+        /* Card / Panel */
+        .card {
+            background-color: var(--bg-container);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            height: fit-content;
+        }
+
+        .card h2 {
+            margin-bottom: 1.2rem;
+            font-size: 1.4rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        btn {
+            display: inline-block;
+            width: 100%;
+            padding: 0.7rem;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-primary { background-color: var(--primary); }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-cancel { background-color: var(--text-muted); margin-top: 0.5rem; display: none;}
+
+        /* Tabel Data Member */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+            background-color: var(--bg-container);
+        }
+
+        th, td {
+            padding: 0.8rem;
+            text-align: left;
+            border: 1px solid var(--border-color); 
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        tr:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+
+        /* Badge Tier */
+        .badge {
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .badge-basic { background-color: var(--tier-basic); color: var(--text-main); }
+        .badge-reguler { background-color: var(--tier-reguler); color: #2b6cb0; }
+        .badge-premium { background-color: var(--tier-premium); color: #b7791f; }
+
+        /* Aksi Edit/Hapus */
+        .btn-action {
+            padding: 0.3rem 0.6rem;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-right: 0.3rem;
+        }
+        .btn-edit { background-color: var(--warning); }
+        .btn-delete { background-color: var(--danger); }
+
+        /* Footer */
+        footer {
+            background-color: var(--bg-container);
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ARTA FORTUNA - Top Up Game dan Pulsa</h1>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2 id="formTitle">Tambah Member Baru</h2>
+            <form id="memberForm" onsubmit="handleFormSubmit(event)">
+                <input type="hidden" id="memberId">
+                
+                <div class="form-group">
+                    <label for="memberName">Nama Lengkap</label>
+                    <input type="text" id="memberName" class="form-control" placeholder="Masukkan nama" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="memberUsername">Username</label>
+                    <input type="text" id="memberUsername" class="form-control" placeholder="Masukkan username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="memberEmail">Email</label>
+                    <input type="email" id="memberEmail" class="form-control" placeholder="nama@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="memberTier">Pilihan Tier</label>
+                    <select id="memberTier" class="form-control" required>
+                        <option value="Basic">Basic</option>
+                        <option value="Reguler">Reguler</option>
+                        <option value="Premium">Premium</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerDate">Tanggal Mendaftar</label>
+                    <input type="date" id="registerDate" class="form-control" required>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-primary" style="padding: 0.7rem; border-radius: 4px; border: none; color: white; font-weight: bold; cursor: pointer; width: 100%;">Tambah Member</button>
+                <button type="button" id="cancelBtn" class="btn-cancel" onclick="resetForm()" style="padding: 0.7rem; border-radius: 4px; border: none; color: white; font-weight: bold; cursor: pointer; width: 100%;">Batal Edit</button>
+            </form>
+        </div>
+
+        <div class="card" style="overflow: hidden;">
+            <h2>Daftar Aktif Member</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Tier</th>
+                            <th>Tgl Daftar</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="memberTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Arta Fortuna. Hak Cipta Dilindungi Undang-Undang.</p>
+    </footer>
+
+    <script>
+        let members = [
+            { id: 1, name: "Budi Santoso", username: "budi_s", email: "budi@gmail.com", tier: "Premium", date: "2026-03-01" },
+            { id: 2, name: "Siti Rahma", username: "sitirahma", email: "siti@gmail.com", tier: "Reguler", date: "2026-05-15" },
+            { id: 3, name: "Andi Wijaya", username: "andiw", email: "andi@gmail.com", tier: "Basic", date: "2026-06-10" }
+        ];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderTable();
+            document.getElementById('registerDate').valueAsDate = new Date();
+        });
+
+        function renderTable() {
+            const tbody = document.getElementById("memberTableBody");
+            tbody.innerHTML = "";
+
+            if(members.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted);">Belum ada data member.</td></tr>`;
+                return;
+            }
+
+            members.forEach(member => {
+                const tr = document.createElement("tr");
+
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                const formattedDate = new Date(member.date).toLocaleDateString('id-ID', options);
+
+                const badgeClass = `badge-${member.tier.toLowerCase()}`;
+
+                tr.innerHTML = `
+                    <td><strong>${member.name}</strong></td>
+                    <td>@${member.username}</td>
+                    <td>${member.email}</td>
+                    <td><span class="badge ${badgeClass}">${member.tier}</span></td>
+                    <td>${formattedDate}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editMember(${member.id})">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteMember(${member.id})">Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const id = document.getElementById("memberId").value;
+            const name = document.getElementById("memberName").value;
+            const username = document.getElementById("memberUsername").value;
+            const email = document.getElementById("memberEmail").value;
+            const tier = document.getElementById("memberTier").value;
+            const date = document.getElementById("registerDate").value;
+
+            if (id) {
+                const index = members.findIndex(m => m.id == id);
+                if (index !== -1) {
+                    members[index] = { id: parseInt(id), name, username, email, tier, date };
+                }
+            } else {
+                const newId = members.length > 0 ? Math.max(...members.map(m => m.id)) + 1 : 1;
+                members.push({ id: newId, name, username, email, tier, date });
+            }
+
+            resetForm();
+            renderTable();
+        }
+
+        function editMember(id) {
+            const member = members.find(m => m.id === id);
+            if (!member) return;
+
+            document.getElementById("memberId").value = member.id;
+            document.getElementById("memberName").value = member.name;
+            document.getElementById("memberUsername").value = member.username;
+            document.getElementById("memberEmail").value = member.email;
+            document.getElementById("memberTier").value = member.tier;
+            document.getElementById("registerDate").value = member.date;
+
+            document.getElementById("formTitle").innerText = "Ubah Data Member";
+            document.getElementById("submitBtn").innerText = "Simpan Perubahan";
+            document.getElementById("cancelBtn").style.display = "block";
+            
+            document.getElementById("memberName").focus();
+        }
+
+        function deleteMember(id) {
+            if (confirm("Apakah Anda yakin ingin menghapus member ini?")) {
+                members = members.filter(m => m.id !== id);
+                renderTable();
+                resetForm();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById("memberForm").reset();
+            document.getElementById("memberId").value = "";
+            document.getElementById("formTitle").innerText = "Tambah Member Baru";
+            document.getElementById("submitBtn").innerText = "Tambah Member";
+            document.getElementById("cancelBtn").style.display = "none";
+            document.getElementById('registerDate').valueAsDate = new Date();
+        }
+
+        // Fitur Ganti Tema diperbarui hanya mengubah teks emoji
+        function toggleTheme() {
+            const body = document.documentElement;
+            const themeBtn = document.getElementById("themeToggle");
+            
+            if (body.getAttribute("data-theme") === "dark") {
+                body.removeAttribute("data-theme");
+                themeBtn.innerText = "🌙";
+            } else {
+                body.setAttribute("data-theme", "dark");
+                themeBtn.innerText = "☀️";
+            }
+        }
+    </script>
+</body>
+</html>
