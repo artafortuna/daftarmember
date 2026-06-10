@@ -203,7 +203,7 @@
         .badge-reguler { background-color: var(--tier-reguler); color: #2b6cb0; }
         .badge-premium { background-color: var(--tier-premium); color: #b7791f; }
 
-        /* Aksi Edit/Hapus */
+        /* Aksi Edit/Hapus/Blokir */
         .btn-action {
             padding: 0.3rem 0.6rem;
             border: none;
@@ -212,9 +212,12 @@
             cursor: pointer;
             font-size: 0.85rem;
             margin-right: 0.3rem;
+            margin-bottom: 0.3rem;
         }
         .btn-edit { background-color: var(--warning); }
         .btn-delete { background-color: var(--danger); }
+        .btn-block { background-color: var(--text-muted); }
+        .btn-unblock { background-color: var(--success); }
 
         /* Footer */
         footer {
@@ -231,7 +234,7 @@
 <body>
 
     <header>
-        <h1>ARTA FORTUNA - Top Up Game dan Pulsa</h1>
+        <h1>Arta Fortuna</h1>
         <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
     </header>
 
@@ -275,23 +278,50 @@
             </form>
         </div>
 
-        <div class="card" style="overflow: hidden;">
-            <h2>Daftar Aktif Member</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nama</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Tier</th>
-                            <th>Tgl Daftar</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="memberTableBody">
-                        </tbody>
-                </table>
+        <div>
+            <div class="card" style="overflow: hidden; margin-bottom: 2rem;">
+                <h2>Daftar Aktif Member</h2>
+                
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <input type="text" id="searchMember" class="form-control" placeholder="🔍 Cari berdasarkan nama, username, email, atau tier..." oninput="renderTable()">
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Tier</th>
+                                <th>Tgl Daftar</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="memberTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card" style="overflow: hidden;">
+                <h2 style="color: var(--danger); border-bottom-color: var(--danger);">Daftar Member Diblokir</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Tier</th>
+                                <th>Tgl Daftar</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="blockedTableBody">
+                            </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>
@@ -301,11 +331,8 @@
     </footer>
 
     <script>
-        let members = [
-            { id: 1, name: "Budi Santoso", username: "budi_s", email: "budi@gmail.com", tier: "Premium", date: "2026-03-01" },
-            { id: 2, name: "Siti Rahma", username: "sitirahma", email: "siti@gmail.com", tier: "Reguler", date: "2026-05-15" },
-            { id: 3, name: "Andi Wijaya", username: "andiw", email: "andi@gmail.com", tier: "Basic", date: "2026-06-10" }
-        ];
+        // Data member contoh telah dikosongkan sesuai permintaan
+        let members = [];
 
         document.addEventListener("DOMContentLoaded", () => {
             renderTable();
@@ -313,35 +340,85 @@
         });
 
         function renderTable() {
-            const tbody = document.getElementById("memberTableBody");
-            tbody.innerHTML = "";
+            const tbodyActive = document.getElementById("memberTableBody");
+            const tbodyBlocked = document.getElementById("blockedTableBody");
+            
+            tbodyActive.innerHTML = "";
+            tbodyBlocked.innerHTML = "";
 
-            if(members.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted);">Belum ada data member.</td></tr>`;
-                return;
+            const searchInput = document.getElementById("searchMember");
+            const keyword = searchInput ? searchInput.value.toLowerCase() : "";
+
+            // --- RENDER MEMBER AKTIF ---
+            const activeMembers = members.filter(member => {
+                return member.status === "active" && (
+                       member.name.toLowerCase().includes(keyword) ||
+                       member.username.toLowerCase().includes(keyword) ||
+                       member.email.toLowerCase().includes(keyword) ||
+                       member.tier.toLowerCase().includes(keyword)
+                );
+            });
+
+            if(activeMembers.length === 0) {
+                tbodyActive.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted);">${keyword ? 'Member aktif tidak ditemukan.' : 'Belum ada data member aktif.'}</td></tr>`;
+            } else {
+                activeMembers.forEach(member => {
+                    const tr = document.createElement("tr");
+                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                    const formattedDate = new Date(member.date).toLocaleDateString('id-ID', options);
+                    const badgeClass = `badge-${member.tier.toLowerCase()}`;
+
+                    tr.innerHTML = `
+                        <td><strong>${member.name}</strong></td>
+                        <td>@${member.username}</td>
+                        <td>${member.email}</td>
+                        <td><span class="badge ${badgeClass}">${member.tier}</span></td>
+                        <td>${formattedDate}</td>
+                        <td>
+                            <button class="btn-action btn-edit" onclick="editMember(${member.id})">Edit</button>
+                            <button class="btn-action btn-block" onclick="blockMember(${member.id})">Blokir</button>
+                            <button class="btn-action btn-delete" onclick="deleteMember(${member.id})">Hapus</button>
+                        </td>
+                    `;
+                    tbodyActive.appendChild(tr);
+                });
             }
 
-            members.forEach(member => {
-                const tr = document.createElement("tr");
-
-                const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                const formattedDate = new Date(member.date).toLocaleDateString('id-ID', options);
-
-                const badgeClass = `badge-${member.tier.toLowerCase()}`;
-
-                tr.innerHTML = `
-                    <td><strong>${member.name}</strong></td>
-                    <td>@${member.username}</td>
-                    <td>${member.email}</td>
-                    <td><span class="badge ${badgeClass}">${member.tier}</span></td>
-                    <td>${formattedDate}</td>
-                    <td>
-                        <button class="btn-action btn-edit" onclick="editMember(${member.id})">Edit</button>
-                        <button class="btn-action btn-delete" onclick="deleteMember(${member.id})">Hapus</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+            // --- RENDER MEMBER DIBLOKIR ---
+            const blockedMembers = members.filter(member => {
+                return member.status === "blocked" && (
+                       member.name.toLowerCase().includes(keyword) ||
+                       member.username.toLowerCase().includes(keyword) ||
+                       member.email.toLowerCase().includes(keyword) ||
+                       member.tier.toLowerCase().includes(keyword)
+                );
             });
+
+            if(blockedMembers.length === 0) {
+                tbodyBlocked.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted);">${keyword ? 'Member terblokir tidak ditemukan.' : 'Tidak ada member yang diblokir.'}</td></tr>`;
+            } else {
+                blockedMembers.forEach(member => {
+                    const tr = document.createElement("tr");
+                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                    const formattedDate = new Date(member.date).toLocaleDateString('id-ID', options);
+                    const badgeClass = `badge-${member.tier.toLowerCase()}`;
+
+                    tr.style.opacity = "0.7";
+
+                    tr.innerHTML = `
+                        <td><strong><del>${member.name}</del></strong></td>
+                        <td>@${member.username}</td>
+                        <td>${member.email}</td>
+                        <td><span class="badge ${badgeClass}">${member.tier}</span></td>
+                        <td>${formattedDate}</td>
+                        <td>
+                            <button class="btn-action btn-unblock" onclick="unblockMember(${member.id})">Buka Blokir</button>
+                            <button class="btn-action btn-delete" onclick="deleteMember(${member.id})">Hapus</button>
+                        </td>
+                    `;
+                    tbodyBlocked.appendChild(tr);
+                });
+            }
         }
 
         function handleFormSubmit(event) {
@@ -357,11 +434,12 @@
             if (id) {
                 const index = members.findIndex(m => m.id == id);
                 if (index !== -1) {
-                    members[index] = { id: parseInt(id), name, username, email, tier, date };
+                    const existingStatus = members[index].status;
+                    members[index] = { id: parseInt(id), name, username, email, tier, date, status: existingStatus };
                 }
             } else {
                 const newId = members.length > 0 ? Math.max(...members.map(m => m.id)) + 1 : 1;
-                members.push({ id: newId, name, username, email, tier, date });
+                members.push({ id: newId, name, username, email, tier, date, status: "active" });
             }
 
             resetForm();
@@ -394,6 +472,27 @@
             }
         }
 
+        function blockMember(id) {
+            if (confirm("Apakah Anda yakin ingin memblokir member ini?")) {
+                const index = members.findIndex(m => m.id === id);
+                if (index !== -1) {
+                    members[index].status = "blocked";
+                    renderTable();
+                    if(document.getElementById("memberId").value == id) resetForm();
+                }
+            }
+        }
+
+        function unblockMember(id) {
+            if (confirm("Apakah Anda yakin ingin membuka blokir member ini?")) {
+                const index = members.findIndex(m => m.id === id);
+                if (index !== -1) {
+                    members[index].status = "active";
+                    renderTable();
+                }
+            }
+        }
+
         function resetForm() {
             document.getElementById("memberForm").reset();
             document.getElementById("memberId").value = "";
@@ -403,7 +502,6 @@
             document.getElementById('registerDate').valueAsDate = new Date();
         }
 
-        // Fitur Ganti Tema diperbarui hanya mengubah teks emoji
         function toggleTheme() {
             const body = document.documentElement;
             const themeBtn = document.getElementById("themeToggle");
